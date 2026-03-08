@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from "recharts";
 
 // ============================================================
 // STAGE CONFIG - 画像を使用
@@ -469,20 +470,61 @@ export default function HealthTamagotchi() {
             <div style={{ color: "#ec407a", textAlign: "center", padding: 30, background: "rgba(255,255,255,0.6)", borderRadius: 24 }}>
               記録がまだありません。<br />記録タブから入力してみよう！🌸
             </div>
-          ) : history.map((h, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.7)", border: "1.5px solid rgba(244,143,177,0.2)", borderRadius: 18, padding: "14px 16px", marginBottom: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ color: "#ad1457", fontSize: 13, fontWeight: "bold" }}>📅 {h.date}</span>
-                <span style={{ color: h.pts >= 0 ? "#4caf50" : "#f44336", fontSize: 14, fontWeight: "bold" }}>{h.pts >= 0 ? `+${h.pts}` : h.pts} XP</span>
+          ) : (
+            <>
+              {/* 睡眠グラフ */}
+              <div style={{ background: "rgba(255,255,255,0.75)", border: "1.5px solid rgba(244,143,177,0.25)", borderRadius: 24, padding: "16px 12px", marginBottom: 14 }}>
+                <div style={{ color: "#ad1457", fontWeight: "bold", fontSize: 14, marginBottom: 12, textAlign: "center" }}>
+                  😴 睡眠時間の記録（時間）
+                </div>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart
+                    data={[...history].reverse().slice(-7).map(h => ({
+                      date: h.date.slice(5),
+                      sleep: parseFloat(h.sleep) || 0,
+                    }))}
+                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,143,177,0.2)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#ec407a" }} />
+                    <YAxis domain={[0, 10]} tick={{ fontSize: 10, fill: "#ec407a" }} />
+                    <Tooltip
+                      formatter={(v) => [`${v}時間`, "睡眠"]}
+                      contentStyle={{ borderRadius: 12, border: "1.5px solid #f48fb1", background: "#fff" }}
+                      labelStyle={{ color: "#ad1457", fontWeight: "bold" }}
+                    />
+                    <ReferenceLine y={7} stroke="#ffd700" strokeDasharray="4 4" label={{ value: "推奨7h", fill: "#f9a825", fontSize: 10 }} />
+                    <Bar dataKey="sleep" fill="url(#sleepGrad)" radius={[8, 8, 0, 0]} />
+                    <defs>
+                      <linearGradient id="sleepGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f48fb1" />
+                        <stop offset="100%" stopColor="#ce93d8" />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ textAlign: "center", fontSize: 11, color: "#ec407a", marginTop: 4 }}>
+                  ✨ 黄色の線が推奨睡眠時間（7時間）
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 10, color: "#ec407a", fontSize: 13 }}>
-                <span>👟 {h.steps}歩</span>
-                <span>🏋️ {["なし","少し","しっかり"][h.gym]}</span>
-                <span>🥗 {"😞😕😐🙂😄"[h.food-1]}</span>
-                <span>😴 {h.sleep}h</span>
-              </div>
-            </div>
-          ))}
+
+              {/* 記録リスト */}
+              {history.map((h, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.7)", border: "1.5px solid rgba(244,143,177,0.2)", borderRadius: 18, padding: "14px 16px", marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ color: "#ad1457", fontSize: 13, fontWeight: "bold" }}>📅 {h.date}</span>
+                    <span style={{ color: h.pts >= 0 ? "#4caf50" : "#f44336", fontSize: 14, fontWeight: "bold" }}>{h.pts >= 0 ? `+${h.pts}` : h.pts} XP</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 10, color: "#ec407a", fontSize: 13 }}>
+                    <span>👟 {h.steps}歩</span>
+                    <span>🏋️ {["なし","少し","しっかり"][h.gym]}</span>
+                    <span>🥗 {"😞😕😐🙂😄"[h.food-1]}</span>
+                    <span>😴 {h.sleep}h</span>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
 
