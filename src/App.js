@@ -68,23 +68,21 @@ export default function HealthTamagotchi() {
   const [todayDone, setTodayDone] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const r = await window.storage.get("hth_save");
-        if (r) {
-          const d = JSON.parse(r.value);
-          setXp(d.xp ?? 0);
-          setHealth(d.health ?? 100);
-          setHistory(d.history ?? []);
-          setTodayDone(d.lastDate === today());
-        }
-      } catch {}
-    })();
+    try {
+      const saved = localStorage.getItem("hth_save");
+      if (saved) {
+        const d = JSON.parse(saved);
+        setXp(d.xp ?? 0);
+        setHealth(d.health ?? 100);
+        setHistory(d.history ?? []);
+        setTodayDone(d.lastDate === today());
+      }
+    } catch {}
   }, []);
 
-  const save = useCallback(async (newXp, newHealth, newHistory) => {
+  const save = useCallback((newXp, newHealth, newHistory) => {
     try {
-      await window.storage.set("hth_save", JSON.stringify({
+      localStorage.setItem("hth_save", JSON.stringify({
         xp: newXp, health: newHealth, history: newHistory, lastDate: today()
       }));
     } catch {}
@@ -225,7 +223,7 @@ export default function HealthTamagotchi() {
       <div style={{ position: "relative", zIndex: 2, textAlign: "center", marginBottom: 12 }}>
         <h1 style={{ fontSize: 24, fontWeight: "900", color: "#ad1457", margin: 0, letterSpacing: 2,
           textShadow: "0 2px 8px rgba(255,128,171,0.5), 2px 2px 0 #fff" }}>
-          🌸 わたしのたまごっち 🌸
+          🌸 さくら日和 🌸
         </h1>
         <p style={{ color: "#ec407a", margin: "4px 0 0", fontSize: 12, fontWeight: "bold" }}>健康習慣でキャラクターを育てよう✨</p>
       </div>
