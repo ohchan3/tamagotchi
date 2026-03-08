@@ -95,6 +95,47 @@ export default function HealthTamagotchi() {
   const progress = nextStage ? Math.min(100, ((xp - stage.minXP) / (nextStage.minXP - stage.minXP)) * 100) : 100;
   const sick = health < 30;
 
+  // セリフを記録内容に応じて生成
+  const getSpeech = () => {
+    if (sick) return "😰 うぅ...体がしんどいよ...もっと大切にして...";
+    if (history.length === 0) return "🌸 はじめまして！毎日記録してね！一緒に成長しよう💕";
+    const last = history[0];
+    const steps = parseInt(last.steps) || 0;
+    const sleep = parseFloat(last.sleep) || 0;
+    const food = last.food;
+    const gym = last.gym;
+
+    // 歩数に応じたセリフ
+    if (steps >= 10000 && gym >= 2) return "💪 すごい！歩数もジムも完璧！あなたって最高！";
+    if (steps >= 10000) return `🎉 ${steps.toLocaleString()}歩も歩いたの！？えらすぎる！`;
+    if (steps >= 7000) return `✨ ${steps.toLocaleString()}歩！いい感じ！もう少しで1万歩だよ！`;
+    if (steps < 3000) return "🥺 今日はあまり歩かなかったね...明日は外に出てみよう！";
+
+    // 睡眠に応じたセリフ
+    if (sleep >= 8) return `😴 ${sleep}時間もぐっすり眠れたんだね！最高の睡眠！`;
+    if (sleep < 5) return `😨 ${sleep}時間しか寝てないの！？もっと寝なきゃダメだよ！`;
+    if (sleep < 6) return `😟 睡眠${sleep}時間は少し短いな...早く寝てね💤`;
+
+    // 食事に応じたセリフ
+    if (food === 5) return "🥗 食事のバランス完璧！体の中からキレイになってるよ！";
+    if (food === 4) return "😊 食事いい感じ！野菜たくさん食べてくれてありがとう！";
+    if (food <= 2) return "🍔 食事のバランスが気になるな...野菜も食べてね！";
+
+    // 運動に応じたセリフ
+    if (gym === 2) return "🏋️ しっかり運動してくれたんだね！体が喜んでるよ！";
+    if (gym === 0) return "🌟 今日もよく頑張ったね！明日も一緒に頑張ろう！";
+
+    // ステージに応じたセリフ
+    const stageSpeech = [
+      "", "ばぶばぶ〜！毎日記録してね💕", "はいはーい！今日もよろしく！",
+      "よちよち...一歩ずつ頑張るね！", "わーい！元気いっぱいだよ！",
+      "今日も学校楽しかった！", "友達と一緒だと楽しいな！",
+      "今日のコーデどうかな？", "音楽って最高！",
+      "大学生活エンジョイ中！", "恋って素敵✨", "世界は広いな〜！"
+    ];
+    return stageSpeech[stage.id] || "今日も一緒に頑張ろう！💕";
+  };
+
   const spawnParticles = () => {
     const ps = Array.from({ length: 30 }, (_, i) => ({ id: i, x: 30 + Math.random() * 40 }));
     setParticles(ps);
@@ -227,6 +268,35 @@ export default function HealthTamagotchi() {
         backdropFilter: "blur(12px)",
         boxShadow: "0 8px 32px rgba(236,64,122,0.12), inset 0 1px 0 rgba(255,255,255,0.8)",
       }}>
+        {/* 吹き出し */}
+        <div style={{
+          position: "relative", display: "inline-block",
+          background: "#fff", border: "2px solid #f48fb1",
+          borderRadius: 18, padding: "10px 16px", marginBottom: 12,
+          fontSize: 13, color: "#ad1457", fontWeight: "bold",
+          boxShadow: "0 2px 8px rgba(244,143,177,0.25)",
+          maxWidth: 260, lineHeight: 1.5,
+        }}>
+          {getSpeech()}
+          {/* 吹き出しの三角 */}
+          <div style={{
+            position: "absolute", bottom: -12, left: "50%",
+            transform: "translateX(-50%)",
+            width: 0, height: 0,
+            borderLeft: "10px solid transparent",
+            borderRight: "10px solid transparent",
+            borderTop: "12px solid #f48fb1",
+          }} />
+          <div style={{
+            position: "absolute", bottom: -9, left: "50%",
+            transform: "translateX(-50%)",
+            width: 0, height: 0,
+            borderLeft: "8px solid transparent",
+            borderRight: "8px solid transparent",
+            borderTop: "10px solid #fff",
+          }} />
+        </div>
+
         <div style={{
           animation: charAnim === "jump" ? "charJump 0.8s ease" : "charIdle 3.5s ease-in-out infinite",
           display: "inline-block",
