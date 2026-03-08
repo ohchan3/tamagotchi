@@ -60,7 +60,8 @@ export default function HealthTamagotchi() {
   const [health, setHealth] = useState(100);
   const [history, setHistory] = useState([]);
   const [tab, setTab] = useState("home");
-  const [log, setLog] = useState({ steps: "", gym: 0, food: 3, sleep: "" });
+  const [log, setLog] = useState({ steps: "", gym: 0, food: 3, sleep: "", comment: "" });
+  const [sakuraMsg, setSakuraMsg] = useState("");
   const [message, setMessage] = useState("");
   const [stageUpMsg, setStageUpMsg] = useState("");
   const [particles, setParticles] = useState([]);
@@ -153,6 +154,87 @@ export default function HealthTamagotchi() {
     return pts;
   };
 
+
+  // さくらちゃんメッセージ生成
+  const getSakuraMessage = (data, pts) => {
+    const steps = parseInt(data.steps) || 0;
+    const sleep = parseFloat(data.sleep) || 0;
+    const gym = data.gym;
+    const food = data.food;
+    const comment = data.comment || "";
+
+    // 運動できた
+    if (gym === 2 && steps >= 7000) {
+      const msgs = [
+        "すごい！今日はたくさん動いたね🌸 さくらちゃんも元気もらったよ！",
+        "運動も歩数もバッチリ！あなたってほんとうにえらいな💪",
+        "体を動かすってきもちいいよね！さくらちゃん誇りに思うよ🌷",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // 睡眠が良い
+    if (sleep >= 7) {
+      const msgs = [
+        `${sleep}時間もぐっすり眠れたんだね🌙 体も心も喜んでるよ！`,
+        "ちゃんと眠れてえらい！明日もきっと元気に過ごせるよ✨",
+        "睡眠バッチリ！さくらちゃんも安心したよ🌸",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // 何もできなかった（マイナス）
+    if (pts < 0) {
+      const msgs = [
+        "今日はうまくいかなかったかな…でも大丈夫、明日また一緒に頑張ろう🌸",
+        "少しずつでいいんだよ。今日休んだ分、明日の力になるよ💕",
+        "無理しなくていいよ。さくらちゃんはずっとそばにいるよ🌷",
+        "ゆっくり休もうね。また明日ね🌙",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // コメントに特定のキーワードがある場合
+    if (comment.includes("つらい") || comment.includes("しんどい") || comment.includes("疲れ")) {
+      const msgs = [
+        "つらいときも記録してくれてありがとう🌸 ゆっくり休んでね。",
+        "無理しないでね。さくらちゃんはいつでも応援してるよ💕",
+        "今日も頑張ったね。しんどいときは休むことも大事だよ🌷",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    if (comment.includes("楽し") || comment.includes("嬉し") || comment.includes("うれし")) {
+      const msgs = [
+        "楽しそうで、さくらちゃんもうれしいな🌸",
+        "その笑顔が一番の健康だよ！💕",
+        "今日さくら日和だね✨ 一緒にいられてしあわせ！",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // 食事が良い
+    if (food >= 4) {
+      const msgs = [
+        "食事のバランスばっちり！体の中からキレイになってるよ🥗",
+        "しっかり食べてくれてありがとう🌸 さくらちゃんうれしいな！",
+        "バランスの良い食事って最高だよね✨",
+      ];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // 普通〜良い記録
+    const msgs = [
+      "今日もがんばったね🌸 さくらちゃんうれしいな！",
+      "少しずつでいいよ。続けることが一番大事💕",
+      "今日もいっしょに過ごせてよかったよ🌷",
+      "えらい！今日も記録してくれてありがとう✨",
+      "今日さくら日和だね🌸 明日もよろしくね！",
+      "一歩一歩着実に成長してるよ💪",
+    ];
+    return msgs[Math.floor(Math.random() * msgs.length)];
+  };
+
   const handleSubmit = () => {
     if (!log.steps || !log.sleep) { setMessage("⚠️ 歩数と睡眠時間を入力してね！"); return; }
     const pts = calcXP(log);
@@ -180,7 +262,9 @@ export default function HealthTamagotchi() {
     else if (newHealth < 30) setMessage("🤒 体調が悪そう... 休んで回復しよう！");
     else setMessage("😟 今日は怠けちゃった... 明日頑張ろう！");
 
-    setLog({ steps: "", gym: 0, food: 3, sleep: "" });
+    setSakuraMsg(getSakuraMessage(log, pts));
+    setLog({ steps: "", gym: 0, food: 3, sleep: "", comment: "" });
+    setTab("home");
   };
 
   const healthColor = health > 60 ? "#ec407a" : health > 30 ? "#ff9800" : "#f44336";
@@ -348,9 +432,28 @@ export default function HealthTamagotchi() {
           zIndex: 2, background: "rgba(255,255,255,0.75)",
           border: "1.5px solid rgba(244,143,177,0.4)",
           borderRadius: 18, padding: "10px 20px",
-          color: "#ad1457", fontSize: 13, fontWeight: "bold", marginBottom: 14,
+          color: "#ad1457", fontSize: 13, fontWeight: "bold", marginBottom: 8,
         }}>
           {message}
+        </div>
+      )}
+
+      {/* さくらちゃんメッセージ */}
+      {sakuraMsg && tab === "home" && (
+        <div style={{
+          zIndex: 2, width: "100%", maxWidth: 340, marginBottom: 14,
+          background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(252,228,236,0.9))",
+          border: "2px solid #f48fb1",
+          borderRadius: 22, padding: "16px 20px",
+          boxShadow: "0 4px 16px rgba(244,143,177,0.3)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{ fontSize: 22 }}>🌸</div>
+            <div style={{ color: "#ad1457", fontSize: 13, fontWeight: "bold" }}>さくらちゃんからひとこと</div>
+          </div>
+          <div style={{ color: "#c2185b", fontSize: 14, lineHeight: 1.7, fontWeight: "500" }}>
+            {sakuraMsg}
+          </div>
         </div>
       )}
 
@@ -447,6 +550,18 @@ export default function HealthTamagotchi() {
                   }}>{e}</button>
                 ))}
               </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ color: "#ec407a", fontSize: 13, display: "block", marginBottom: 6, fontWeight: "bold" }}>💬 今日のひとこと（任意）</label>
+              <input
+                type="text"
+                placeholder="例：今日は疲れたな〜、楽しかった！"
+                value={log.comment}
+                onChange={e => setLog(l => ({ ...l, comment: e.target.value }))}
+                maxLength={50}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 14, border: "1.5px solid rgba(244,143,177,0.4)", background: "rgba(255,255,255,0.8)", color: "#ad1457", fontSize: 14, boxSizing: "border-box" }}
+              />
             </div>
 
             <button onClick={handleSubmit} style={{
