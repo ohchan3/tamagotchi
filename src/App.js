@@ -25,7 +25,11 @@ const STAGE_MESSAGES = [
   "大学生になった！🎓", "素敵な恋が始まった！💕", "世界へ旅立ち！✈️ GOAL！"
 ];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const d = new Date();
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 10);
+};
 
 // ============================================================
 // CHARACTER DISPLAY - 画像表示コンポーネント
